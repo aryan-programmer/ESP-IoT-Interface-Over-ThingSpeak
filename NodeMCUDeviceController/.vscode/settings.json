@@ -1,0 +1,6 @@
+{
+    "C_Cpp.default.compilerPath": "C:\\Users\\aryan\\AppData\\Local\\Arduino15\\packages\\esp8266\\tools\\xtensa-lx106-elf-gcc\\3.1.0-gcc10.3-e5f9fec\\bin\\xtensa-lx106-elf-g++",
+    "files.associations": {
+        "system_error": "cpp"
+    }
+}

@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>ESP IoT Interface Over ThingSpeak</title>
+	<link href="bootstrap-5.3.3-dist/css/bootstrap.min.css" rel="stylesheet">
+	<link href="fontawesome-free-6.6.0-web/css/fontawesome.css" rel="stylesheet" />
+	<link href="fontawesome-free-6.6.0-web/css/solid.css" rel="stylesheet" />
+</head>
+<body class="container-lg ">
+<h1 class="text-center">ESP IoT Interface Over ThingSpeak</h1>
+<form class="d-flex justify-content-center" id="main-form" action="javascript: void 0">
+	<div class="table-responsive card rounded-4 p-0 m-0 border-primary">
+		<table
+				class="table table-striped table-hover table-bordered border-primary align-middle w-auto rounded-4 p-0 m-0 overflow-hidden"
+				style="border-style: hidden">
+			<thead>
+			<tr class="align-middle">
+				<th>#</th>
+				<th>Device name</th>
+				<th>Value</th>
+				<th>
+					<div class="d-flex justify-content-between align-items-center">
+						Form
+						<button type="button" class="btn btn-warning rounded-pill" id="sync-form-btn">
+							<i class="fa-solid fa-arrows-rotate"></i>
+						</button>
+					</div>
+				</th>
+			</tr>
+			</thead>
+			<tbody>
+			<tr>
+				<td>1</td>
+				<td>Light 1</td>
+				<td><span id="light-1-current-status"></span></td>
+				<td>
+					<div class="d-flex justify-content-end">
+						<div class="btn-group" role="group">
+							<input
+									type="radio" class="btn-check" name="light-1-radio" id="light-1-on-radio" autocomplete="off" checked
+									value="on">
+							<label class="btn btn-outline-success rounded-start-pill" for="light-1-on-radio">ON</label>
+
+							<input
+									type="radio" class="btn-check" name="light-1-radio" id="light-1-off-radio" autocomplete="off"
+									value="off">
+							<label class="btn btn-outline-danger rounded-end-pill" for="light-1-off-radio">OFF</label>
+						</div>
+					</div>
+				</td>
+			</tr>
+			<tr>
+				<td>2</td>
+				<td>Light 2</td>
+				<td><span id="light-2-current-status"></span></td>
+				<td>
+					<div class="d-flex justify-content-end">
+						<div class="btn-group" role="group">
+							<input
+									type="radio" class="btn-check" name="light-2-radio" id="light-2-on-radio" autocomplete="off" checked
+									value="on">
+							<label class="btn btn-outline-success rounded-start-pill" for="light-2-on-radio">ON</label>
+
+							<input
+									type="radio" class="btn-check" name="light-2-radio" id="light-2-off-radio" autocomplete="off"
+									value="off">
+							<label class="btn btn-outline-danger rounded-end-pill" for="light-2-off-radio">OFF</label>
+						</div>
+					</div>
+				</td>
+			</tr>
+			<tr>
+				<td>3</td>
+				<td>AC</td>
+				<td><span id="ac-current-status"></span></td>
+				<td>
+					<div class="d-flex justify-content-end">
+						<div class="btn-group" role="group">
+							<input
+									type="radio" class="btn-check" name="ac-radio" id="ac-on-radio" autocomplete="off" checked value="on">
+							<label class="btn btn-outline-success rounded-start-pill" for="ac-on-radio">ON</label>
+
+							<input type="radio" class="btn-check" name="ac-radio" id="ac-off-radio" autocomplete="off" value="off">
+							<label class="btn btn-outline-danger rounded-end-pill" for="ac-off-radio">OFF</label>
+						</div>
+					</div>
+				</td>
+			</tr>
+			<tr>
+				<td>4</td>
+				<td>Fan</td>
+				<td><span id="fan-current-status"></span></td>
+				<td>
+					<div class="d-flex justify-content-end">
+						<div class="btn-group" role="group">
+							<input
+									type="radio" class="btn-check" name="fan-radio" id="fan-on-radio" autocomplete="off" checked
+									value="on">
+							<label class="btn btn-outline-success rounded-start-pill" for="fan-on-radio">ON</label>
+
+							<input type="radio" class="btn-check" name="fan-radio" id="fan-off-radio" autocomplete="off" value="off">
+							<label class="btn btn-outline-danger rounded-end-pill" for="fan-off-radio">OFF</label>
+						</div>
+					</div>
+				</td>
+			</tr>
+			<tr>
+				<td>5</td>
+				<td>Motor</td>
+				<td><span id="motor-current-status"></span></td>
+				<td>
+					<div class="d-flex justify-content-end">
+						<div class="btn-group" role="group">
+							<input
+									type="radio" class="btn-check" name="motor-radio" id="motor-on-radio" autocomplete="off" checked
+									value="on">
+							<label class="btn btn-outline-success rounded-start-pill" for="motor-on-radio">ON</label>
+
+							<input
+									type="radio" class="btn-check" name="motor-radio" id="motor-off-radio" autocomplete="off" value="off">
+							<label class="btn btn-outline-danger rounded-end-pill" for="motor-off-radio">OFF</label>
+						</div>
+					</div>
+				</td>
+			</tr>
+			<tr>
+				<td>6</td>
+				<td>Analog Input Device</td>
+				<td><span id="analog-input-current-status"></span></td>
+				<td>
+					<div class="d-flex justify-content-end">
+						<div class="btn btn-outline-dark disabled rounded-pill"><i class="fa-solid fa-ban"></i></div>
+					</div>
+				</td>
+			</tr>
+			<tr>
+				<td>∞</td>
+				<td>Submit output values</td>
+				<td></td>
+				<td>
+					<div class="d-flex justify-content-end">
+						<button class="btn btn-info rounded-pill" name="submit" id="submit-form-btn">Submit values</button>
+					</div>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="4">
+					<div class="progress">
+						<div
+								class="progress-bar progress-bar-striped progress-bar-animated text-bg-info rounded-pill"
+								id="update-timer-progress-bar"
+								style="width: 75%">75%
+						</div>
+					</div>
+				</td>
+			</tr>
+			</tbody>
+		</table>
+	</div>
+</form>
+
+<div class="modal fade" id="alert-modal">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content" id="alert-modal-content">
+			<div class="modal-header">
+				<h1 class="modal-title fs-5" id="alert-modal-title"></h1>
+				<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+			</div>
+			<div class="modal-body">
+				<p id="alert-modal-message">Modal body text goes here.</p>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">OK</button>
+			</div>
+		</div>
+	</div>
+</div>
+<script src="bootstrap-5.3.3-dist/js/bootstrap.min.js"></script>
+<script src="secrets.js"></script>
+<script>
+addEventListener("load", () => {
+	const TO_DEVICE_FIELDS_GET_URL         = `https://api.thingspeak.com/channels/${TO_DEVICE_CHANNEL_ID_STR}/feeds.json?api_key=${TO_DEVICE_CHANNEL_READ_API_KEY}&results=1`;
+	const TO_DEVICE_FIELDS_BULK_UPDATE_URL = `https://api.thingspeak.com/channels/${TO_DEVICE_CHANNEL_ID_STR}/bulk_update.json`;
+	const FROM_DEVICE_FIELDS_GET_URL       = `https://api.thingspeak.com/channels/${FROM_DEVICE_CHANNEL_ID_STR}/feeds.json?api_key=${FROM_DEVICE_CHANNEL_READ_API_KEY}&results=1`;
+
+	/**
+	 * @type {HTMLFormElement}
+	 */
+	const $mainForm                 = document.getElementById("main-form");
+	const $light1CurrentStatus      = document.getElementById("light-1-current-status");
+	const $light2CurrentStatus      = document.getElementById("light-2-current-status");
+	const $acCurrentStatus          = document.getElementById("ac-current-status");
+	const $fanCurrentStatus         = document.getElementById("fan-current-status");
+	const $motorCurrentStatus       = document.getElementById("motor-current-status");
+	const $analogInputCurrentStatus = document.getElementById("analog-input-current-status");
+	const $syncFormBtn              = document.getElementById("sync-form-btn");
+	/**
+	 * @type {HTMLButtonElement}
+	 */
+	const $submitFormBtn            = document.getElementById("submit-form-btn");
+	const $updateTimerProgressBar   = document.getElementById("update-timer-progress-bar");
+
+	const $alertModal        = document.getElementById("alert-modal");
+	const $alertModalContent = document.getElementById("alert-modal-content");
+	const $alertModalTitle   = document.getElementById("alert-modal-title");
+	const $alertModalMessage = document.getElementById("alert-modal-message");
+	/**
+	 * @type {bootstrap.Modal}
+	 */
+	const bs$alertModal      = bootstrap.Modal.getOrCreateInstance($alertModal);
+
+	let light1Status = true;
+	let light2Status = true;
+	let fanStatus    = true;
+	let acStatus     = true;
+	let motorStatus  = true;
+	let firstFetch   = true;
+
+	syncStatusWithForm();
+	onCanSubmitData();
+	$syncFormBtn.addEventListener("click", () => syncStatusWithForm());
+
+	$mainForm.addEventListener("submit", async (ev) => {
+		ev.preventDefault();
+		console.log(ev);
+		const formData = Object.fromEntries(new FormData($mainForm));
+		resetUpdateTimeout();
+
+		const res = await fetch(TO_DEVICE_FIELDS_BULK_UPDATE_URL, {
+			method : "POST",
+			headers: {
+				"Accept"      : "application/json",
+				"Content-Type": "application/json"
+			},
+			body   : JSON.stringify({
+				"write_api_key": TO_DEVICE_CHANNEL_WRITE_API_KEY,
+				"updates"      : [{
+					"delta_t": "0",
+					"field1" : formData["light-1-radio"] === "on" ? 1 : 0,
+					"field2" : formData["light-2-radio"] === "on" ? 1 : 0,
+					"field3" : formData["ac-radio"] === "on" ? 1 : 0,
+					"field4" : formData["fan-radio"] === "on" ? 1 : 0,
+					"field5" : formData["motor-radio"] === "on" ? 1 : 0,
+				}]
+			})
+		});
+		console.log(res);
+		if (!(200 <= res.status && res.status <= 299 && (await res.json())["success"])) {
+			showAlert("Error!", "Failed to submit new values for output devices", "danger");
+			return;
+		}
+		resetUpdateTimeout();
+	});
+
+	void (async function fetchDataAndDisplay() {
+		const fetchDataIntervalMillis = 1000;
+
+		// Start requests in parallel, by deferring await-ing of promises
+		let a = fetchOutputDeviceStatus();
+		let b = fetchInputDeviceStatus();
+		await a;
+		await b;
+
+		setTimeout(fetchDataAndDisplay, fetchDataIntervalMillis);
+	})();
+
+	function onCanSubmitData() {
+		$updateTimerProgressBar.style.width = "100%";
+		$updateTimerProgressBar.textContent = "Can re-submit";
+		$submitFormBtn.disabled             = false;
+	}
+
+	function resetUpdateTimeout() {
+		let updateTimeoutSeconds = 15;
+
+		$submitFormBtn.disabled = true;
+
+		$updateTimerProgressBar.style.width = "0%";
+		$updateTimerProgressBar.textContent = updateTimeoutSeconds + "s";
+
+		const delayTimeout = 500;
+
+		setTimeout(() => {
+			let start;
+			let animationTimeoutMillis = updateTimeoutSeconds * 1000 - delayTimeout;
+
+			/**
+			 * @param {DOMHighResTimeStamp} timestamp
+			 */
+			function step(timestamp) {
+				if (start === undefined) {
+					start = timestamp;
+				}
+				const elapsed = timestamp - start;
+
+				$updateTimerProgressBar.style.width = (100 / animationTimeoutMillis) * elapsed + "%";
+				$updateTimerProgressBar.textContent = (updateTimeoutSeconds - Math.floor(elapsed / 1000)) + "s";
+
+				if (elapsed < animationTimeoutMillis) {
+					window.requestAnimationFrame(step);
+				} else {
+					onCanSubmitData();
+				}
+			}
+
+			window.requestAnimationFrame(step);
+		}, delayTimeout);
+	}
+
+	function syncStatusWithForm() {
+		$mainForm.elements.namedItem(`light-1-${light1Status ? "on" : "off"}-radio`).checked = true;
+		$mainForm.elements.namedItem(`light-2-${light2Status ? "on" : "off"}-radio`).checked = true;
+		$mainForm.elements.namedItem(`ac-${acStatus ? "on" : "off"}-radio`).checked          = true;
+		$mainForm.elements.namedItem(`fan-${fanStatus ? "on" : "off"}-radio`).checked        = true;
+		$mainForm.elements.namedItem(`motor-${motorStatus ? "on" : "off"}-radio`).checked    = true;
+	}
+
+	async function fetchOutputDeviceStatus() {
+		const res = await fetch(TO_DEVICE_FIELDS_GET_URL);
+		//console.log(res);
+		if (!(200 <= res.status && res.status <= 299)) {
+			showAlert("Error!", "Failed to fetch data for output devices", "danger");
+			return;
+		}
+		const responseJson               = await res.json();
+		const responseLatestFeed         = responseJson?.["feeds"]?.[0];
+		light1Status                     = ((+(responseLatestFeed?.["field1"] ?? 0)) !== 0);
+		light2Status                     = ((+(responseLatestFeed?.["field2"] ?? 0)) !== 0);
+		acStatus                         = ((+(responseLatestFeed?.["field3"] ?? 0)) !== 0);
+		fanStatus                        = ((+(responseLatestFeed?.["field4"] ?? 0)) !== 0);
+		motorStatus                      = ((+(responseLatestFeed?.["field5"] ?? 0)) !== 0);
+		$light1CurrentStatus.textContent = (light1Status ? "ON" : "OFF");
+		$light2CurrentStatus.textContent = (light2Status ? "ON" : "OFF");
+		$acCurrentStatus.textContent     = (acStatus ? "ON" : "OFF");
+		$fanCurrentStatus.textContent    = (fanStatus ? "ON" : "OFF");
+		$motorCurrentStatus.textContent  = (motorStatus ? "ON" : "OFF");
+		if (firstFetch) {
+			firstFetch = false;
+			syncStatusWithForm();
+		}
+	}
+
+	async function fetchInputDeviceStatus() {
+		const res = await fetch(FROM_DEVICE_FIELDS_GET_URL);
+		//console.log(res);
+		if (!(200 <= res.status && res.status <= 299)) {
+			showAlert("Error!", "Failed to fetch data for input devices", "danger");
+			return;
+		}
+		const responseJson                    = await res.json();
+		$analogInputCurrentStatus.textContent = responseJson?.["feeds"]?.[0]?.["field1"] ?? "Unknown";
+	}
+
+	/**
+	 * @param {string} title
+	 * @param {string} message
+	 * @param {string} color
+	 */
+	function showAlert(title, message, color) {
+		$alertModalTitle.textContent   = title;
+		$alertModalMessage.textContent = message;
+		$alertModalContent.classList.remove(...[...$alertModalContent.classList.values()].filter(v => v.startsWith("text-bg-")));
+		$alertModalContent.classList.add(`text-bg-${color}`);
+		bs$alertModal.show();
+	}
+});
+</script>
+</body>
+</html>
