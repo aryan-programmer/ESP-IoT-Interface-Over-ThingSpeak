@@ -14,5 +14,4 @@
 .cxx
 local.properties
 secrets.h
-secrets.js
 NodeMCUDeviceController/build
