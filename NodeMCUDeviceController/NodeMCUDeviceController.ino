@@ -1,5 +1,8 @@
-
+#define HAS_DHT 1
 #include <CSV_Parser.h>
+#if HAS_DHT == 1
+#include <DHT.h>
+#endif
 #include <ESP8266HTTPClient.h>
 #include <ESP8266WiFi.h>
 #include <inttypes.h>
@@ -16,7 +19,7 @@ const char* GET_DATA_URL = "http://api.thingspeak.com/channels/" TO_DEVICE_CHANN
 // https://api.thingspeak.com/update?api_key={write-api-key}&field1=
 const char* ANALOG_DATA_WRITE_URL =
 	"http://api.thingspeak.com/"
-	"update?api_key=" FROM_DEVICE_CHANNEL_WRITE_API_KEY "&field1=";
+	"update?api_key=" FROM_DEVICE_CHANNEL_WRITE_API_KEY;
 
 const int ANALOG_DATA_WRITE_URL_LEN = strlen(ANALOG_DATA_WRITE_URL);
 
@@ -25,12 +28,16 @@ const unsigned long analog_data_next_send_time_diff_on_failure_millis = 2000;
 
 // LIGHT1_PIN & LIGHT2_PIN are common anode, i.e. turn on when LOW voltage is
 // applied
-const uint8_t LIGHT1_PIN       = 2;   // ESP Onboard LED
-const uint8_t LIGHT2_PIN       = 16;  // NodeMCU Onboard LED
-const uint8_t AC_PIN           = 4;
-const uint8_t FAN_PIN          = 12;
-const uint8_t MOTOR_PIN        = 5;
+const uint8_t LIGHT1_PIN = 2;   // ESP Onboard LED
+const uint8_t LIGHT2_PIN = 16;  // NodeMCU Onboard LED
+const uint8_t AC_PIN     = 4;   // D2
+const uint8_t FAN_PIN    = 12;  // D6
+const uint8_t MOTOR_PIN  = 5;   // D1
+#if HAS_DHT == 1
+DHT dht(4, DHT11);  // D2
+#else
 const uint8_t ANALOG_INPUT_PIN = A0;
+#endif
 
 /*CSV Data Example:
 created_at,entry_id,field1,field2,field3,field4,field5
@@ -46,12 +53,15 @@ const char* csv_format = "--ccccc";
 
 WiFiServer server(80);
 
+const float EPSILON = 0.001;
+
 String        past_payload               = "";
-int           past_analog_data           = -1;
+float         past_temperature           = -1;
+float         past_humidity              = -1;
 unsigned long next_analog_data_send_time = 0;
 
 void fetch_output_values_to_display(HTTPClient& http, WiFiClient& client);
-int  send_analog_data_to_server(HTTPClient& http, WiFiClient& client, int data);
+int  send_analog_data_to_server(HTTPClient& http, WiFiClient& client, float temperature, float humidity);
 void print_http_diagnostics_message(const char* url, int httpCode, const String& payload);
 void print_http_diagnostics_message(const String& url, int httpCode, const String& payload);
 
@@ -107,18 +117,27 @@ void loop() {
 		delay(1);
 		int curr_time_millis = millis();
 		if (curr_time_millis >= next_analog_data_send_time) {
-			int64_t avg_analog_data = 0;
-			int     n_data_samples  = 15;
+#if HAS_DHT == 1
+			float temperature = dht.readTemperature();
+			float humidity    = dht.readHumidity();
+#else
+			float avg_analog_data = 0;
+			int   n_data_samples  = 15;
 			for (int j = 0; j <= n_data_samples; ++j, ++i) {
 				avg_analog_data += analogRead(ANALOG_INPUT_PIN);
 				delay(1);
 			}
 			avg_analog_data /= n_data_samples;
-			if (avg_analog_data == past_analog_data) {
+			// Make shift values
+			float temperature = avg_analog_data / 4095 * 50 + 5;  // 5 to 55 celsius
+			float humidity    = avg_analog_data / 4095 * 100;     // 0 to 100% RH
+#endif
+			if (abs(temperature - past_temperature) < EPSILON && abs(humidity - past_humidity) < EPSILON) {
 				// Serial.println("Analog data same as before, skipping sending...");
 			} else {
-				if (send_analog_data_to_server(http, client, avg_analog_data) == 0) {
-					past_analog_data           = avg_analog_data;
+				if (send_analog_data_to_server(http, client, temperature, humidity) == 0) {
+					past_temperature           = temperature;
+					past_humidity              = humidity;
 					next_analog_data_send_time = millis() + analog_data_next_send_time_diff_millis;
 				} else {
 					next_analog_data_send_time = millis() + analog_data_next_send_time_diff_on_failure_millis;
@@ -173,11 +192,14 @@ void fetch_output_values_to_display(HTTPClient& http, WiFiClient& client) {
 	past_payload = std::move(payload);
 }
 
-int send_analog_data_to_server(HTTPClient& http, WiFiClient& client, int data) {
+int send_analog_data_to_server(HTTPClient& http, WiFiClient& client, float temperature, float humidity) {
 	String url;
-	url.reserve(ANALOG_DATA_WRITE_URL_LEN + 25);
+	url.reserve(ANALOG_DATA_WRITE_URL_LEN + 40);
 	url = ANALOG_DATA_WRITE_URL;
-	url += data;
+	url += "&field1=";
+	url += String(temperature, 2);
+	url += "&field2=";
+	url += String(humidity, 2);
 	http.begin(client, url);
 	int httpCode = http.GET();
 
